@@ -1,5 +1,6 @@
 import 'package:coffee_shop/components/my_butten.dart';
 import 'package:coffee_shop/const.dart';
+import 'package:coffee_shop/servises/mail_servise.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 
@@ -52,7 +53,7 @@ class _paymentPageState extends State<PaymentScreen> {
                     ),
                     SizedBox(height: 20),
                     MyButten(
-                      onTap: () {
+                      onTap: () async {
                         if (formKey.currentState!.validate()) {
                           widget.onPaymentSuccess();
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -60,18 +61,12 @@ class _paymentPageState extends State<PaymentScreen> {
                               content: Text("Payment Successful!!"),
                             ),
                           );
+                          await sendOrderDetails(userEmail, userCart);
                           Navigator.pop(context);
                         } else {
                           print("invalid");
                         }
                       },
-                      // child: Container(
-                      //   margin: EdgeInsets.all(8),
-                      //   child: Text('validate',
-                      //       style:
-                      //           TextStyle(color: Colors.white, fontSize: 18),
-                      //     ),
-                      // ),
                       text: 'Pay now',
 
                     ),
@@ -95,5 +90,7 @@ class _paymentPageState extends State<PaymentScreen> {
       isCvvFocused = creditCardModel.isCvvFocused;
     });
   }
+
+
 
 }

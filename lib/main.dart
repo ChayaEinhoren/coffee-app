@@ -14,11 +14,17 @@ import 'firebase_options.dart';
       
 //   runApp(MyApp());
 // }
+// void main() async {
+// WidgetsFlutterBinding.ensureInitialized();
+//   await Firebase.initializeApp(options: DefaualtFirebaseOptions.currentPlatform);
+//   runApp(MyApp());
+// }
 void main() async {
-WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaualtFirebaseOptions.currentPlatform);
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
+
 
 
 class MyApp extends StatelessWidget {

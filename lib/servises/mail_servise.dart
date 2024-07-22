@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffee_shop/models/coffee.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
 
@@ -87,7 +89,8 @@ String generateVerificationCode() {
   return List.generate(6, (index) => random.nextInt(10).toString()).join();
 }
 
-Future<void> sendEmail(String recipientEmail, String subject, String body) async {
+Future<void> sendEmail(
+    String recipientEmail, String subject, String body) async {
   final message = Message()
     ..from = Address("chl5712483@gmail.com", 'CoffeeApp')
     ..recipients.add(recipientEmail)
@@ -104,11 +107,54 @@ Future<void> sendEmail(String recipientEmail, String subject, String body) async
     }
   }
 }
-Future<void> sendVerificationEmail(String email) async {
+
+Future<String> sendVerificationEmail(String email, String uid) async {
   String code = generateVerificationCode();
-  // String code = "123456"; // For testing purposes, replace with generateVerificationCode() when ready.
   String subject = "Your Verification Code";
   String body = "Your verification code is: $code";
 
   await sendEmail(email, subject, body);
+  await saveUserIfNotExists(email, uid);
+  return code;
+}
+
+Future<bool> checkIfEmailExists(String email) async {
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where('email', isEqualTo: email)
+      .get();
+
+  return querySnapshot.docs.isNotEmpty;
+}
+
+Future<void> saveUserIfNotExists(String email, String uid) async {
+  bool emailExists = await checkIfEmailExists(email);
+
+  if (!emailExists) {
+    Users user = Users(uid: uid, email: email);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .set(user.toMap());
+    print('User saved successfully');
+  } else {
+    print('Email already exists in the database');
+  }
+}
+
+Future<void> sendOrderDetails(String email,Coffee coffee) async {
+  String subject = "Your Order Details";
+  StringBuffer body = StringBuffer();
+  body.writeln("Thank you for your order!");
+  body.writeln("\nOrder Details:\n");
+
+  for (var item in userCart) {
+    body.writeln("Product: ${item['productName']}");
+    body.writeln("Quantity: ${item['quantity']}");
+    body.writeln("Price: ${item['price']}");
+    body.writeln("\n");
+  }
+  body.writeln("Thank you for shopping with us!");
+  await sendEmail(email, subject, body.toString());
+
 }
